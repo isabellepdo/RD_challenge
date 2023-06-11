@@ -17,11 +17,11 @@ class CustomerSuccessBalancing
       last_score = cs[:score] + 1
     end
 
-    return max_number_customers(customer_success_balancing)
+    max_number_customers(customer_success_balancing)
   end
 
   def active_customer_success_order_score
-    return @customer_success.reject { |record| @away_customer_success.include?(record[:id]) }.sort_by { |record| record[:score] }
+    @customer_success.reject { |record| @away_customer_success.include?(record[:id]) }.sort_by { |record| record[:score] }
   end
 
   def number_of_costumers_for_this(cs, last_score)
@@ -37,19 +37,25 @@ class CustomerSuccessBalancing
     customer_success_balancing.each do |record|
       number_costumers = record[:number_costumers]
 
-      if max_number_customers.nil? || number_costumers >= max_number_customers[:number_costumers]
+      if max_number_customers.nil? || number_costumers > max_number_customers[:number_costumers]
         second_max_number_customers = max_number_customers
         max_number_customers = record
-      elsif (second_max_number_customers.nil? || number_costumers >= second_max_number_customers[:number_costumers]) && number_costumers <= max_number_customers[:number_costumers]
+      elsif second_max_number_customers.nil? || number_costumers >= second_max_number_customers[:number_costumers]
         second_max_number_customers = record
       end
     end
 
-    result = (second_max_number_customers && max_number_customers[:number_costumers] == second_max_number_customers[:number_costumers]) ? 0 : max_number_customers[:id_cs]
+    if second_max_number_customers && max_number_customers[:number_costumers] == second_max_number_customers[:number_costumers]
+      0
+    else
+      max_number_customers[:id_cs]
+    end
   end
 end
 
 class CustomerSuccessBalancingTests < Minitest::Test
+  
+
   def test_scenario_one
     balancer = CustomerSuccessBalancing.new(
       build_scores([60, 20, 95, 75]),
